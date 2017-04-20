@@ -32,7 +32,8 @@ public class SeguretatAES {
     public SeguretatAES(int keySize) {
         this.keySize = keySize;
     }
-/*
+
+    /*
     public SecretKey keygenKeyGeneration(int keySize) {
         SecretKey sKey = null;
         if ((keySize == 128) || (keySize == 192) || (keySize == 256)) {
@@ -54,7 +55,7 @@ public class SeguretatAES {
         }
         return sKey;
     }
-*/
+     */
     public SecretKey generarClau(String pass, int keySize) {
         SecretKey sKey = null;
         if ((keySize == 128) || (keySize == 192) || (keySize == 256)) {
@@ -62,7 +63,7 @@ public class SeguretatAES {
                 //Convertim la cadena en Array de bytes
                 byte[] data = pass.getBytes("UTF-8");
                 //Creem objecte MEssageDisgest amb algortime SHA-256
-                MessageDigest md = MessageDigest.getInstance(ALGORITME);
+                MessageDigest md = MessageDigest.getInstance(ALGORITME2);
                 //Generem contrasenya de 32 bytes
                 byte[] hash = md.digest(data);
                 //Retallem la contrasenya al nombre de bytes solicitats a keySize
@@ -76,16 +77,37 @@ public class SeguretatAES {
         return sKey;
     }
 
-    public static void cifrarFichero(File fichero, SecretKey clave) throws NoSuchAlgorithmException, NoSuchPaddingException, FileNotFoundException, IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
+    public void cifrarFichero(String fichero, SecretKey clave) throws NoSuchAlgorithmException, NoSuchPaddingException, FileNotFoundException, IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
         Cipher ciph = Cipher.getInstance("AES");
         ciph.init(Cipher.ENCRYPT_MODE, clave);
-        
+
         FileInputStream fis = new FileInputStream(fichero);
-        byte[] buff= new byte[1000];
-        while(fis.read(buff, 0, buff.length)!=-1){
-            ciph.update(buff, 0, buff.length);
+        byte[] buff = new byte[1000];
+        int read;
+        while ((read = fis.read(buff, 0, buff.length)) != -1) {
+            ciph.update(buff, 0, read);
         }
         FileOutputStream fos = new FileOutputStream("textoCodificado.txt");
         fos.write(ciph.doFinal());
+        fis.close();
+        fos.close();
+    }
+
+    public void descifrarFichero(SecretKey clave) throws NoSuchAlgorithmException, NoSuchPaddingException, FileNotFoundException, IOException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
+
+        Cipher deciph = Cipher.getInstance("AES");
+        deciph.init(Cipher.DECRYPT_MODE, clave);
+
+        FileOutputStream fos;
+        try (FileInputStream fis = new FileInputStream("textoCodificado.txt")) {
+            byte[] buff = new byte[1000];
+            int read;
+            while ((read = fis.read(buff, 0, buff.length)) != -1) {
+                deciph.update(buff, 0, read);
+            }   fos = new FileOutputStream("textoDescodificado.txt");
+            fos.write(deciph.doFinal());
+        }
+        fos.close();
+        
     }
 }
